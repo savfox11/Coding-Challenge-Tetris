@@ -7,7 +7,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-
 //Game Class
 class Game extends JPanel {
     //All objetcs------------------------------------------------------------------------------
@@ -15,7 +14,7 @@ class Game extends JPanel {
     public static final int tileSize = 30;
     public static final int rows = 20;
     public static final int columns = 10;
-    private int[][] board = new int[ROWS][COLS];
+    private int[][] board = new int[rows][columns];
     //Game pieces------------------------
     private int[][] piece;
     private Color pieceColor;
@@ -59,15 +58,56 @@ class Game extends JPanel {
 
 
     //Constucter----------------------------------------------------------------------------
-    public GamePanel() {
+    public Game() {
         //Set Background
         setBackground(darkPink);
         setFocusable(true);
 
-        //Add Key Listener
+        //Add Key Listener for movement
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (gameOver) return;
 
+                switch (e.getKeyCode()) {
+                    //Arrow key pad
+                    case KeyEvent.VK_LEFT -> moveLeft();
+                    case KeyEvent.VK_RIGHT -> moveRight();
+                    case KeyEvent.VK_UP -> rotatePiece();
+                    case KeyEvent.VK_DOWN -> fastDrop();
+                    //awsd
+                    case KeyEvent.VK_A -> moveLeft();
+                    case KeyEvent.VK_D -> moveRight();
+                    case KeyEvent.VK_W -> rotatePiece();
+                    case KeyEvent.VK_S -> fastDrop();
+                }
+                repaint();
+            }
+        });
 
+        //Add timer to game
+        Timer timer = new Timer(500, e -> {
+            //Stop timer and game when game over is reached
+            if (gameOver) {
+                ((Timer) e.getSource()).stop();
+                repaint();
+                return;
+            }
+
+            if (!collidesBelow()) {
+                pieceY++;
+            } else {
+                lockPiece();
+                clearLines();
+                spawnNewBlock();
+            }
+            repaint();
+        });
+        timer.start();
+
+        spawnNewBlock(); // First piece
     }
+
 
     //Game Visuals--------------------------------------------------------------------------
     //Board
@@ -93,10 +133,42 @@ class Game extends JPanel {
         for (int row = 0; row < piece.length; row++)
             for (int col = 0; col < piece[row].length; col++)
                 if (piece[row][col] == 1)
-                    g.fillRect((pieceX + col) * TILE_SIZE, (pieceY + row) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    g.fillRect((pieceX + col) * tileSize, (pieceY + row) * tileSize, tileSize, tileSize);
+    }
+
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        createGrid(g);
+        createBoard(g);
+        createPiece(g);
+
+        if (gameOver) {
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 36));
+            g.drawString("GAME OVER", 20, getHeight() / 2);
+        }
     }
 
     //Functions-----------------------------------------------------------------------------
+    //Create Piece
+    public void spawnNewBlock() {
+        if (nextPiece == null) {
+            nextPiece = shapes[(int) (Math.random() * shapes.length)];
+            nextPieceColor = colours[(int) (Math.random() * colours.length)];
+        }
+
+        piece = nextPiece;
+        pieceColor = nextPieceColor;
+        pieceX = columns / 2 - piece[0].length / 2;
+        pieceY = 0;
+
+        if (collides(piece, pieceX, pieceY)) gameOver = true;
+
+        nextPiece = shapes[(int) (Math.random() * shapes.length)];
+        nextPieceColor = colours[(int) (Math.random() * colours.length)];
+    }
     //Piece Movement
     //Left 
     private void moveLeft() {
@@ -119,7 +191,70 @@ class Game extends JPanel {
         if (!collides(rotated, pieceX, pieceY)) piece = rotated;
     }
 
+    //Detect when piece reaches the bottom
+    private boolean collidesBelow() {
+        return collides(piece, pieceX, pieceY + 1);
+    }
+    //Detect when the piece collides with a side wall or other piece
+    private boolean collides(int[][] testPiece, int x, int y) {
+        for (int row = 0; row < testPiece.length; row++)
+            for (int col = 0; col < testPiece[row].length; col++)
+                if (testPiece[row][col] == 1) {
+                    int newX = x + col;
+                    int newY = y + row;
+                    if (newX < 0 || newX >= columns || newY < 0 || newY >= rows || board[newY][newX] != 0)
+                        return true;
+                }
+        return false;
+    }
 
+    //Lock a piece into place when it touched the bottom 
+    private void lockPiece() {
+        for (int row = 0; row < piece.length; row++)
+            for (int col = 0; col < piece[row].length; col++)
+                if (piece[row][col] == 1)
+                    board[pieceY + row][pieceX + col] = 1;
+    }
 
+    //Detect and clear a line that has been fininshed 
+    private void clearLines() {
+        for (int row = rows - 1; row >= 0; row--) {
+            boolean full = true;
+            for (int col = 0; col < columns; col++)
+                if (board[row][col] == 0) {
+                    full = false;
+                    break;
+                }
+
+            if (full) {
+                removeLine(row);
+                linesCleared++;
+                score += 100;
+                if (linesCleared % 10 == 0) level++;
+                row++; // Recheck same row after shift
+            }
+        }
+    }
+    //remove the finished line
+    private void removeLine(int row) {
+        for (int r = row; r > 0; r--)
+            board[r] = board[r - 1].clone();
+        board[0] = new int[columns];
+    }
+
+    //Fast Drop a piece into place
+    private void fastDrop() {
+        while (!collidesBelow()) pieceY++;
+        lockPiece();
+        clearLines();
+        spawnNewBlock();
+    }
+
+    //Getters for Side Panel----------
+    public int getScore() { return score; }
+    public int getLevel() { return level; }
+    public int getLinesCleared() { return linesCleared; }
+    public int[][] getNextPiece() { return nextPiece; }
+    public Color getNextPieceColor() { return nextPieceColor; }
 
 }
