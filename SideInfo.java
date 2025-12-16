@@ -7,7 +7,7 @@ class SideInfo extends JPanel {
     //Import Game class
     private Game game;
 
-    Color pastelPink = new Color(252, 235, 246);
+    Color pastelPink = new Color(230, 110, 178);
 
     //Create Side panel
     public SideInfo(Game game) {
@@ -18,7 +18,7 @@ class SideInfo extends JPanel {
         setBackground(pastelPink);
     }
 
-    
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

@@ -14,7 +14,9 @@ class Game extends JPanel {
     public static final int tileSize = 30;
     public static final int rows = 20;
     public static final int columns = 10;
-    private int[][] board = new int[rows][columns];
+    //private int[][] board = new int[rows][columns];
+    private Color[][] board = new Color[rows][columns];
+    private SideInfo sideInfo;
     //Game pieces------------------------
     private int[][] piece;
     private Color pieceColor;
@@ -27,10 +29,14 @@ class Game extends JPanel {
     Color pastelLavender = new Color(236, 227, 252); 
     Color pastelYellow = new Color(250, 248, 223); 
     Color pastelPurple = new Color(131, 174, 242);
-    Color darkPink = new Color(148, 33, 106);
+    Color darkPink = new Color(184, 61, 139);
+    Color pastelOrange = new Color(230, 156, 110);
+    Color blu = new Color(72, 116, 194);
+    Color pastelRed = new Color(214, 47, 89);
+
     //Colours to be used for pieces
     private Color[] colours = {
-            Color.cyan, pastelLavender, Color.orange, pastelGreen, Color.red, pastelYellow, pastelPurple
+            blu, pastelLavender, pastelOrange, pastelGreen, pastelRed, pastelYellow, pastelPurple
     };
     //Create the shape for peices
     private int[][][] shapes = {
@@ -114,9 +120,14 @@ class Game extends JPanel {
     private void createBoard(Graphics g) {
         for (int row = 0; row < rows; row++)
             for (int col = 0; col < columns; col++)
-                if (board[row][col] != 0) {
-                    g.setColor(Color.BLUE);
-                    g.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+                if (board[row][col] != null) {
+                    g.setColor(board[row][col]);
+                    drawBlock(
+                        g,
+                        col * tileSize,
+                        row * tileSize,
+                        board[row][col]
+                    );
                 }
     }
     //Grid on board
@@ -133,7 +144,20 @@ class Game extends JPanel {
         for (int row = 0; row < piece.length; row++)
             for (int col = 0; col < piece[row].length; col++)
                 if (piece[row][col] == 1)
-                    g.fillRect((pieceX + col) * tileSize, (pieceY + row) * tileSize, tileSize, tileSize);
+                    drawBlock(
+                        g,
+                        (pieceX + col) * tileSize,
+                        (pieceY + row) * tileSize,
+                        pieceColor
+                    );
+    }
+
+    private void drawBlock(Graphics g, int x, int y, Color color) {
+        g.setColor(color);
+        g.fillRect(x, y, tileSize, tileSize);
+
+        g.setColor(Color.BLACK); // outline colour
+        g.drawRect(x, y, tileSize, tileSize);
     }
 
 
@@ -202,7 +226,7 @@ class Game extends JPanel {
                 if (testPiece[row][col] == 1) {
                     int newX = x + col;
                     int newY = y + row;
-                    if (newX < 0 || newX >= columns || newY < 0 || newY >= rows || board[newY][newX] != 0)
+                    if (newX < 0 || newX >= columns || newY < 0 || newY >= rows || board[newY][newX] != null)
                         return true;
                 }
         return false;
@@ -213,7 +237,7 @@ class Game extends JPanel {
         for (int row = 0; row < piece.length; row++)
             for (int col = 0; col < piece[row].length; col++)
                 if (piece[row][col] == 1)
-                    board[pieceY + row][pieceX + col] = 1;
+                    board[pieceY + row][pieceX + col] = pieceColor;
     }
 
     //Detect and clear a line that has been fininshed 
@@ -221,7 +245,7 @@ class Game extends JPanel {
         for (int row = rows - 1; row >= 0; row--) {
             boolean full = true;
             for (int col = 0; col < columns; col++)
-                if (board[row][col] == 0) {
+                if (board[row][col] == null) {
                     full = false;
                     break;
                 }
@@ -230,6 +254,9 @@ class Game extends JPanel {
                 removeLine(row);
                 linesCleared++;
                 score += 100;
+                if (sideInfo != null) {
+                    sideInfo.repaint();
+                }
                 if (linesCleared % 10 == 0) level++;
                 row++; // Recheck same row after shift
             }
@@ -239,7 +266,7 @@ class Game extends JPanel {
     private void removeLine(int row) {
         for (int r = row; r > 0; r--)
             board[r] = board[r - 1].clone();
-        board[0] = new int[columns];
+            board[0] = new Color[columns];
     }
 
     //Fast Drop a piece into place
@@ -256,5 +283,9 @@ class Game extends JPanel {
     public int getLinesCleared() { return linesCleared; }
     public int[][] getNextPiece() { return nextPiece; }
     public Color getNextPieceColor() { return nextPieceColor; }
+
+    public void setSideInfo(SideInfo sideInfo) {
+    this.sideInfo = sideInfo;
+}
 
 }
