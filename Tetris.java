@@ -20,8 +20,8 @@ public class Tetris extends JFrame {
         add(game, BorderLayout.CENTER);
 
         //call the side info panel
-        SidePanel sidePanel = new SidePanel(gamePanel);
-        add(sidePanel, BorderLayout.EAST);
+        SideInfo sideInfo = new SideInfo(game);
+        add(sideInfo, BorderLayout.EAST);
 
         //Set the frame to visible
         setVisible(true);
