@@ -15,6 +15,13 @@ class Game extends JPanel {
     public static final int tileSize = 30;
     public static final int rows = 20;
     public static final int columns = 10;
+    private int[][] board = new int[ROWS][COLS];
+    //Game pieces------------------------
+    private int[][] piece;
+    private Color pieceColor;
+    private int pieceX, pieceY;
+    private int[][] nextPiece;
+    private Color nextPieceColor;
     //Game items------------------------
     //Colors added
     Color pastelGreen = new Color(119, 221, 119); 
@@ -28,6 +35,7 @@ class Game extends JPanel {
     };
     //Create the shape for peices
     private int[][][] shapes = {
+            //The different shapes
             // O
             {{1, 1}, {1, 1}},
             // I
@@ -47,13 +55,23 @@ class Game extends JPanel {
     private int score = 0;
     private int level = 1;
     private int linesCleared = 0;
+    private boolean gameOver = false;
+
 
     //Constucter----------------------------------------------------------------------------
+    public GamePanel() {
+        //Set Background
+        setBackground(darkPink);
+        setFocusable(true);
 
+        //Add Key Listener
+
+
+    }
 
     //Game Visuals--------------------------------------------------------------------------
     //Board
-    private void drawBoard(Graphics g) {
+    private void createBoard(Graphics g) {
         for (int row = 0; row < rows; row++)
             for (int col = 0; col < columns; col++)
                 if (board[row][col] != 0) {
@@ -62,7 +80,7 @@ class Game extends JPanel {
                 }
     }
     //Grid on board
-    private void drawGrid(Graphics g) {
+    private void createGrid(Graphics g) {
         g.setColor(Color.magenta);
         for (int row = 0; row < rows; row++)
             for (int col = 0; col < columns; col++)
@@ -70,7 +88,7 @@ class Game extends JPanel {
     }
 
     //pieces
-    private void drawPiece(Graphics g) {
+    private void createPiece(Graphics g) {
         g.setColor(pieceColor);
         for (int row = 0; row < piece.length; row++)
             for (int col = 0; col < piece[row].length; col++)
@@ -79,8 +97,27 @@ class Game extends JPanel {
     }
 
     //Functions-----------------------------------------------------------------------------
+    //Piece Movement
+    //Left 
+    private void moveLeft() {
+        if (!collides(piece, pieceX - 1, pieceY)) pieceX--;
+    }
+    //Right
+    private void moveRight() {
+        if (!collides(piece, pieceX + 1, pieceY)) pieceX++;
+    }
+    //Rotate piece
+    private void rotatePiece() {
+        int rows = piece.length;
+        int cols = piece[0].length;
+        int[][] rotated = new int[cols][rows];
 
+        for (int row = 0; row < rows; row++)
+            for (int col = 0; col < cols; col++)
+                rotated[col][rows - 1 - row] = piece[row][col];
 
+        if (!collides(rotated, pieceX, pieceY)) piece = rotated;
+    }
 
 
 
