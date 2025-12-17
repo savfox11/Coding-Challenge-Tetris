@@ -15,13 +15,17 @@ public class Tetris extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        //Call Game
+        //Call Game and SideInfo
         Game game = new Game();
-        add(game, BorderLayout.CENTER);
-
-        //call the side info panel
         SideInfo sideInfo = new SideInfo(game);
+        //Connect SideIndo to Game
+        game.setSideInfo(sideInfo);
+
+        add(game, BorderLayout.CENTER);
         add(sideInfo, BorderLayout.EAST);
+        
+        
+        
 
         //Set the frame to visible
         setVisible(true);

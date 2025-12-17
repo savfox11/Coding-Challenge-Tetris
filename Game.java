@@ -61,6 +61,10 @@ class Game extends JPanel {
     private int level = 1;
     private int linesCleared = 0;
     private boolean gameOver = false;
+    //Getter for SideInfo
+    public void setSideInfo(SideInfo sideInfo) {
+        this.sideInfo = sideInfo;
+    }
 
 
     //Constucter----------------------------------------------------------------------------
@@ -192,6 +196,10 @@ class Game extends JPanel {
 
         nextPiece = shapes[(int) (Math.random() * shapes.length)];
         nextPieceColor = colours[(int) (Math.random() * colours.length)];
+
+        if (sideInfo != null) {
+            sideInfo.repaint();
+        }
     }
     //Piece Movement
     //Left 
@@ -254,11 +262,12 @@ class Game extends JPanel {
                 removeLine(row);
                 linesCleared++;
                 score += 100;
+                if (linesCleared % 10 == 0) level++;
+
                 if (sideInfo != null) {
                     sideInfo.repaint();
                 }
-                if (linesCleared % 10 == 0) level++;
-                row++; // Recheck same row after shift
+                row++;
             }
         }
     }
@@ -283,9 +292,5 @@ class Game extends JPanel {
     public int getLinesCleared() { return linesCleared; }
     public int[][] getNextPiece() { return nextPiece; }
     public Color getNextPieceColor() { return nextPieceColor; }
-
-    public void setSideInfo(SideInfo sideInfo) {
-    this.sideInfo = sideInfo;
-}
 
 }
